@@ -4,11 +4,19 @@
   "description": "google cloud functions for the assignment",
   "main": "index.js",
   "scripts": {
+    "serve": "firebase serve --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "logs": "firebase functions:log",
+    "deploy": "firebase deploy --only functions"
   },
   "repository": {
-    "type": "git",
+    "type": "https://github.com/dualeoo/Data-Structure-A2",
     "url": "data-structure-a2"
   },
   "author": "Tran Van Minh",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "firebase-admin": "^6.0.0"
+  }
 }
