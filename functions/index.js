@@ -1,7 +1,7 @@
-const admin = require("firebase-admin");
+// const admin = require("firebase-admin");
 const functions = require("firebase-functions");
 
-const app = admin.initializeApp(functions.config().firebase);
+// const app = admin.initializeApp(functions.config().firebase);
 
 exports.helloWorld = functions.https.onRequest((request, response) => {
     response.send("Hello from Firebase!");
@@ -124,8 +124,8 @@ exports.onPostContainerCreate = functions.firestore
             const payload = {
                 notification: {
                     title: `${postContainerOwner.firstName} recently made a new post`,
-                    body: `${postContainer.content}`
-                    // icon: follower.photoURL
+                    body: `${postContainer.content}`,
+                    icon: "https://scontent.fsgn3-1.fna.fbcdn.net/v/t1.0-1/p240x240/34117274_10155663043522914_4610195604646133760_n.jpg?_nc_cat=0&oh=59375a3da37c071552e8037020145e98&oe=5C0643F4"
                 }
             };
             const response = await admin.messaging().sendToDevice(tokens, payload);
@@ -133,5 +133,46 @@ exports.onPostContainerCreate = functions.firestore
             console.log(`Number of success messages = ${response.successCount}`);
             return 0;
         });
+        return 0;
+    });
+
+exports.onPostContainerLiked = functions.firestore
+    .document('postContainers/{postContainerId}/likedBy/{userId}')
+    .onCreate(async (snap, context) => {
+        let userLike = snap.data();
+        let postContainerId = context.params.postContainerId;
+        console.log(`User ${context.params.userId} liked postContainer ${postContainerId}`);
+
+        let firestore = snap.ref.firestore;
+        let postContainerRef = firestore.doc(`postContainers/${postContainerId}`);
+        let postContainerSnap = await postContainerRef.get();
+        let postContainer = postContainerSnap.data();
+
+        let postContainerOwnerRef = postContainer.userId;
+        console.log(`PostContainerOwner =  ${postContainerOwnerRef.id}`);
+        let tokenQuerySnapshot = await postContainerOwnerRef.collection("notificationTokens").get();
+        if (tokenQuerySnapshot.empty) {
+            console.log(`The following user (${postContainer.userId}) has no notification tokens. So no notification`);
+            return 0;
+        }
+
+        let tokens = [];
+        let tokenNo = 1;
+        tokenQuerySnapshot.forEach(snap => {
+            let notificationToken = snap.data();
+            let token = Object.keys(notificationToken)[0];
+            console.log(`Token${tokenNo++} = ${token}`);
+            tokens.push(token);
+        });
+        const payload = {
+            notification: {
+                title: `${userLike.firstName} recently like your message`,
+                body: `Your original message: ${postContainer.content}`,
+                icon: "https://scontent.fsgn3-1.fna.fbcdn.net/v/t1.0-1/p240x240/34117274_10155663043522914_4610195604646133760_n.jpg?_nc_cat=0&oh=59375a3da37c071552e8037020145e98&oe=5C0643F4"
+            }
+        };
+        const response = await admin.messaging().sendToDevice(tokens, payload);
+        console.log(`Number of failure messages = ${response.failureCount}`);
+        console.log(`Number of success messages = ${response.successCount}`);
         return 0;
     });
