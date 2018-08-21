@@ -176,3 +176,15 @@ exports.onPostContainerLiked = functions.firestore
         console.log(`Number of success messages = ${response.successCount}`);
         return 0;
     });
+
+exports.onPostcontainerDeleted = functions.firestore
+    .document('postContainers/{postContainerId}')
+    .onDelete((snap, context) => {
+        let firestore = snap.ref.firestore;
+        let oldPostContainer = snap.data();
+        let docRef = firestore.collection("deletedPostContainer").doc(snap.id);
+        return docRef.set(oldPostContainer).then(result => {
+            console.log(`Successfully backup the postContainer at ${result.writeTime.toDate().toLocaleString()}`);
+            return 0;
+        });
+    });
