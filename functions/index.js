@@ -1,7 +1,12 @@
-// const admin = require("firebase-admin");
-const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const functions = require("firebase-functions")
 
-// const app = admin.initializeApp(functions.config().firebase);
+
+admin.initializeApp(functions.config().firebase);
+
+var db = admin.firestore();
+
+const changesRef = db.collection('changes');
 
 exports.helloWorld = functions.https.onRequest((request, response) => {
     response.send("Hello from Firebase!");
@@ -22,6 +27,9 @@ exports.filterVulgarity = functions.firestore
         console.log(`Content before filter: ${contentBeforeFilter}`);
         const contentAfterFilter = contentBeforeFilter.replace(/fuck/gi, "");
         console.log(`Content after filter: ${contentAfterFilter}`);
+
+        changesRef.add(newValue)
+
         return snap.ref.update({content: contentAfterFilter});
 
     });
@@ -38,6 +46,9 @@ exports.addToMostRecentMessage = functions.firestore
         console.log(`The mostRecentMessages collection Ref = ${mostRecentMessagesRef.id}`);
         let snapshotId = snap.id;
         console.log(`The snapshot ID = ${snapshotId}`);
+
+        changesRef.add(newMessage)
+
         return mostRecentMessagesRef.doc(snapshotId).set(newMessage).then((result) => {
             console.log(`Successfully add to mostRecentMessages at ${result.writeTime}`);
             return 0;
@@ -62,6 +73,9 @@ exports.keepOldMessage = functions.firestore
             // let messagesRef = firestore.collection("messages");
             // let oldMessage = Object.assign({}, previousValue, {newMessage: newDocumentReference});
             console.log(`New content = ${newContent}`);
+            
+            changesRef.add(newContent)
+            
             return newDocumentReference.collection("previousVersions")
                 .add({content: oldContent, time: previousValue.time})
                 .then(result => {
@@ -78,6 +92,9 @@ exports.keepDeletedMessage = functions.firestore
         let firestore = snap.ref.firestore;
         let oldMessage = snap.data();
         let docRef = firestore.collection("deletedMessages").doc(snap.id);
+        
+        changesRef.add(oldMessage)
+        
         return docRef.set(oldMessage).then(result => {
             console.log(`Successfully backup the message at ${result.writeTime.toDate().toLocaleString()}`);
             return 0;
@@ -89,6 +106,9 @@ exports.onPostContainerCreate = functions.firestore
     .onCreate(async (snap, context) => {
         console.log(`The postContainer recently created =  ${snap.id}`);
         let postContainer = snap.data();
+        
+        changesRef.add(postContainer)
+        
         let postContainerOwnerRef = postContainer.userId;
         let postContainerOwnerId = postContainerOwnerRef.id;
         console.log(`The postContainer ownerID =  ${postContainerOwnerId}`);
@@ -140,6 +160,9 @@ exports.onPostContainerLiked = functions.firestore
     .document('postContainers/{postContainerId}/likedBy/{userId}')
     .onCreate(async (snap, context) => {
         let userLike = snap.data();
+        
+        changesRef.add(userLike)
+
         let postContainerId = context.params.postContainerId;
         console.log(`User ${context.params.userId} liked postContainer ${postContainerId}`);
 
@@ -182,9 +205,14 @@ exports.onPostcontainerDeleted = functions.firestore
     .onDelete((snap, context) => {
         let firestore = snap.ref.firestore;
         let oldPostContainer = snap.data();
+        
+        changesRef.add(oldPostContainer)
+        
         let docRef = firestore.collection("deletedPostContainer").doc(snap.id);
         return docRef.set(oldPostContainer).then(result => {
             console.log(`Successfully backup the postContainer at ${result.writeTime.toDate().toLocaleString()}`);
             return 0;
         });
     });
+
+// exports.toan = require("../indexToan.js");

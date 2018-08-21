@@ -9,7 +9,7 @@ var db = admin.firestore();
 const restaurantRef = db.collection('restaurants');
 const deletedReviewRestaurantRef = db.collection('deletedReviewRestaurants');
 const chatRoomRef = db.collection('chatRooms');
-const eventLog = db.collection('eventLogs');
+const changesRef = db.collection('changes');
 
 const SENDGRID_API_KEY = functions.config().sendgrid.key;
 const sgMail = require('@sendgrid/mail');
@@ -36,7 +36,8 @@ exports.createReviewRestaurant = functions.firestore.document('reviewRestaurants
         }
         return null
     });
-    return null
+    
+    return changesRef.add(newValue)
 });
 
 exports.updateReviewRestaurant = functions.firestore
@@ -81,7 +82,7 @@ exports.updateReviewRestaurant = functions.firestore
                 }
             );
 
-        return change.after.ref.set({}, {merge: true});
+        return changesRef.add(newValue)
 
     });
 
@@ -110,7 +111,7 @@ exports.deleteReviewRestaurant = functions.firestore
                 }
                 return null
             });
-        return null
+        return changesRef.add(deletedData)
     });
 
 exports.createChatRoom = functions.firestore
@@ -129,8 +130,38 @@ exports.createChatRoom = functions.firestore
             }
         };
 
-        return sgMail.send(msg)
+        sgMail.send(msg)
+        
+        return changesRef.add(data)
 
+    });
+
+exports.updateChatRoom = functions.firestore
+    .document('chatRooms/{chatRoomId}/mostRecentMessages/{messageID}')
+    .onCreate(async (snapshot, context) => {
+        
+        data = snapshot.data();
+
+        var msg
+
+        chatRoom_ = chatRoomRef.doc(context.params.chatRoomId)
+            .get()
+            .then(doc => {
+                res = doc.data();
+                msg = {
+                    to: [data['u1_email'], data['u2_email']],
+                    from: 'foodbook_chat@foodbook.com',
+                    subject: 'New Messages',
+                    templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
+                    substitutionWrappers: ['{{', '}}'],
+                    substitutions: {
+                        action: 'updated'
+                    }
+                };                
+                return sgMail.send(msg)
+            });
+        
+        return changesRef.add(data)
     });
 
 exports.deleteChatRoom = functions.firestore
@@ -148,32 +179,8 @@ exports.deleteChatRoom = functions.firestore
                 action: 'exited'
             }
         };
+        
+        sgMail.send(msg)
 
-        return sgMail.send(msg)
-    });
-
-exports.updateChatRoom = functions.firestore
-    .document('chatRooms/{chatRoomId}/mostRecentMessages/{messageID}')
-    .onCreate((snapshot, context) => {
-        data = snapshot.data();
-
-        chatRoom_ = chatRoomRef.doc(context.params.chatRoomId)
-            .get()
-            .then(doc => {
-                res = doc.data();
-                const msg = {
-                    to: [res['u1_email'], res['u2_email']],
-                    from: 'foodbook_chat@foodbook.com',
-                    subject: 'New Message',
-                    templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
-                    substitutionWrappers: ['{{', '}}'],
-                    substitutions: {
-                        action: 'exited'
-                    }
-                };
-
-                return sgMail.send(msg)
-            });
-
-        return null
+        return changesRef.add(data)
     });
