@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 var admin = require('firebase-admin');
 
 
-admin.initializeApp(functions.config().firebase);
+// admin.initializeApp(functions.config().firebase);
 
 var db = admin.firestore();
 
@@ -163,9 +163,7 @@ exports.createChatRoom = functions.firestore
         return changesRef.add(data)
 
     });        
-        return changesRef.add(data)
-    });
-
+    
 exports.deleteChatRoom = functions.firestore
     .document('chatRooms/{chatRoomId}')
     .onDelete((snap, context) => {

@@ -8,6 +8,12 @@ const db = admin.firestore();
 const settings = {/* your settings... */ timestampsInSnapshots: true};
 db.settings(settings);
 const changesRef = db.collection('changes');
+const chatRoomRef = db.collection('chatRooms');
+
+
+const SENDGRID_API_KEY = functions.config().sendgrid.key;
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 exports.helloWorld = functions.https.onRequest((request, response) => {
     response.send("Hello from Firebase!");
@@ -221,4 +227,54 @@ exports.onPostcontainerDeleted = functions.firestore
         });
     });
 
-// exports.toan = require("../indexToan.js");
+exports.toan = require("./indexToan");
+
+// exports.updateChatRoom = functions.firestore
+//     .document('chatRooms/{chatRoomId}/mostRecentMessages/{messageID}')
+//     .onCreate(async (snapshot, context) => {
+        
+//         data = snapshot.data();
+//         changesRef.add(data)
+//         chatRoom = chatRoomRef.doc(context.params.chatRoomId)
+//             .get()
+//             .then(doc => {
+//                 res = doc.data();
+                
+//                 const msg = {
+//                     to: [res['u1_email'], res['u2_email']],
+//                     from: 'foodbook_chat@foodbook.com',
+//                     subject: 'Exited Chatroom',
+//                     templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
+//                     substitutionWrappers: ['{{', '}}'],
+//                     substitutions: {
+//                         action: 'exited'
+//                     }
+//                 };
+                
+//                 return sgMail.send(msg)
+//             });
+        
+//         return null
+//     });
+
+// exports.createChatRoom = functions.firestore
+//     .document('chatRooms/{chatRoomId}')
+//     .onCreate((snap, context) => {
+//         data = snap.data();
+
+//         const msg = {
+//             to: [data['u1_email'], data['u2_email']],
+//             from: 'foodbook_chat@foodbook.com',
+//             subject: 'New Chatroom',
+//             templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
+//             substitutionWrappers: ['{{', '}}'],
+//             substitutions: {
+//                 action: 'joined'
+//             }
+//         };
+
+//         sgMail.send(msg)
+        
+//         return changesRef.add(data)
+
+//     });
