@@ -227,54 +227,72 @@ exports.onPostcontainerDeleted = functions.firestore
         });
     });
 
-exports.toan = require("./indexToan");
 
-// exports.updateChatRoom = functions.firestore
-//     .document('chatRooms/{chatRoomId}/mostRecentMessages/{messageID}')
-//     .onCreate(async (snapshot, context) => {
+
+exports.updateChatRoom = functions.firestore
+    .document('chatRooms/{chatRoomId}/mostRecentMessages/{messageID}')
+    .onCreate(async (snapshot, context) => {
         
-//         data = snapshot.data();
-//         changesRef.add(data)
-//         chatRoom = chatRoomRef.doc(context.params.chatRoomId)
-//             .get()
-//             .then(doc => {
-//                 res = doc.data();
+        data = snapshot.data();
+        changesRef.add(data)
+        chatRoom = chatRoomRef.doc(context.params.chatRoomId)
+            .get()
+            .then(doc => {
+                res = doc.data();
                 
-//                 const msg = {
-//                     to: [res['u1_email'], res['u2_email']],
-//                     from: 'foodbook_chat@foodbook.com',
-//                     subject: 'Exited Chatroom',
-//                     templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
-//                     substitutionWrappers: ['{{', '}}'],
-//                     substitutions: {
-//                         action: 'exited'
-//                     }
-//                 };
+                const msg = {
+                    to: [res['u1_email'], res['u2_email']],
+                    from: 'foodbook_chat@foodbook.com',
+                    subject: 'Update Chatroom',
+                    templateId: 'd-aa11ca8c172940b58c24aaad3f50b64e',
+                    substitutionWrappers: ['{{', '}}'],
+                    substitutions: {
+                        'chatroom_id': context.params.chatRoomId
+                    }
+                };
                 
-//                 return sgMail.send(msg)
-//             });
+                return sgMail.send(msg)
+            });
         
-//         return null
-//     });
+        return null
+    });
 
-// exports.createChatRoom = functions.firestore
-//     .document('chatRooms/{chatRoomId}')
-//     .onCreate((snap, context) => {
-//         data = snap.data();
+exports.deleteChatRoom = functions.firestore
+    .document('chatRooms/{chatRoomId}')
+    .onDelete((snap, context) => {
+        data = snap.data();
 
-//         const msg = {
-//             to: [data['u1_email'], data['u2_email']],
-//             from: 'foodbook_chat@foodbook.com',
-//             subject: 'New Chatroom',
-//             templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
-//             substitutionWrappers: ['{{', '}}'],
-//             substitutions: {
-//                 action: 'joined'
-//             }
-//         };
-
-//         sgMail.send(msg)
+        const msg = {
+            to: [data['u1_email'], data['u2_email']],
+            from: 'foodbook_chat@foodbook.com',
+            subject: 'Delete Chatroom',
+            templateId: 'd-c19616702ecd4fb4a7e07de2011ef5e7',
+            substitutionWrappers: ['{{', '}}'],
+            substitutions: {
+                'chatroom_id': 'exited'
+            }
+        };
         
-//         return changesRef.add(data)
+        sgMail.send(msg)
 
-//     });
+        return changesRef.add(data)
+    });
+
+
+exports.createChatRoom = functions.firestore
+    .document('chatRooms/{chatRoomId}')
+    .onCreate((snap, context) => {
+        data = snap.data();
+
+        const msg = {
+            to: [data['u1_email'], data['u2_email']],
+            from: 'foodbook_chat@foodbook.com',
+            subject: 'New Chatroom',
+            templateId: 'd-c2af1a49d39941be9cfe10ea30f98b6c',
+        };
+
+        sgMail.send(msg)
+        
+        return changesRef.add(data)
+
+    });        
