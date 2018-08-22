@@ -17,6 +17,7 @@
   "author": "Tran Van Minh",
   "license": "UNLICENSED",
   "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
     "firebase-admin": "^6.0.0"
   }
 }
