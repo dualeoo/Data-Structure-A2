@@ -66,8 +66,7 @@ exports.updateFood = functions.firestore
             change.after.data().Name === change.before.data().Name &&
             change.after.data().Price === change.before.data().Price &&
             change.after.data().Ranking === change.before.data().Ranking &&
-            change.after.data().Likes === change.before.data().Likes &&
-            change.after.data().Reviewed === change.before.data().Reviewed
+            change.after.data().Likes === change.before.data().Likes
         ) {
             return null;
         }

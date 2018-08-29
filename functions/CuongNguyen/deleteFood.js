@@ -11,8 +11,8 @@ exports.handler = function (snap, context, db) {
                     .collection('Food-Ranking')
                     .doc(doc.id)
                     .update({Deleted: true});
-                console.log('Food ' + snap.data().fid + ' has deleted');
-                console.log('Food-Ranking from ' + snap.data().uid + 'Deleted: ' + snap.data().Deleted) //TODO
+                console.log('Food ' + doc.data().fid + ' has deleted');
+                console.log('Food-Ranking from ' + doc.data().uid + ' has Deleted')
             });
             return 0;
         });

@@ -6,7 +6,7 @@ exports.handler = function (change, context, db) {
         .where('fid', '==', change.after.data().fid).get()
         .then(snapshot => {
             snapshot.forEach(doc => {
-                console.log('User ' + doc.data().uid + ' liked the food');
+                console.log('User ' + doc.data().uid + ' was liked the food');
             });
             return 0;
         });
