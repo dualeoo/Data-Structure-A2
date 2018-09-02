@@ -2,7 +2,7 @@
   "name": "data-structure-a2",
   "version": "1.0.0",
   "description": "google cloud functions for the assignment",
-  "main": "indexMinh.js",
+  "main": "functions/indexMinh.js",
   "scripts": {
     "serve": "firebase serve --only functions",
     "shell": "firebase functions:shell",
